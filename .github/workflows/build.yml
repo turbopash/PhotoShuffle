@@ -1,0 +1,40 @@
+name: Build PhotoShuffle
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: |
+          sw_vers
+          swift --version
+
+      - name: Build PhotoShuffle.app
+        run: bash scripts/make_app.sh
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoShuffle
+          path: dist/PhotoShuffle.zip
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: PhotoShuffle (сборка ${{ github.run_number }})
+          body: |
+            Скачайте **PhotoShuffle.zip**, распакуйте и перетащите PhotoShuffle в «Программы».
+            Первый запуск: правый клик по приложению → «Открыть» → «Открыть».
+          files: dist/PhotoShuffle.zip
+          make_latest: true
